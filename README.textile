@@ -6,6 +6,7 @@ Required Sequence is essentially an implementation of the Publish/Subscribe desi
 
 For example, if you need to load an XML config file before doing anything else you could easily write something like this:
 
+<pre>
 <code>
   rs.requireFlag(MyClass.CONFIG_LOADED,
     function () {
@@ -13,6 +14,7 @@ For example, if you need to load an XML config file before doing anything else y
     }
   );
 </code>
+</pre>
 
 h2. Instructions
 
@@ -20,6 +22,7 @@ Build your RS listener as follows. This would be good to do for each class or ea
 
 Here is a complete running example of a program that requires the loadConfig function to be run before doing anything else.
 
+<pre>
 <code>
 package 
 {
@@ -50,6 +53,7 @@ package
   }
 }
 </code>
+</pre>
 
 Okay, that's pretty cool, but does it do anything else? I'm glad you asked actually. The library does three other things right now that are really, really damned important; in fact, I would hazard that most people will only use these later functions but since they all descend from that somewhat simple use above it seemed like a good starting point. 
 
@@ -57,6 +61,7 @@ h3. Stubbornness
 
 If you've ever dealt with URLLoaders you'll know that sometimes they can be flakey. Wouldn't it be cool if you could just write a bit of code to try a function n times once every m seconds until you get some signal?
 
+<pre>
 <code>
   rs.requireFlagWithRetry(MyClass.CONFIG_LOADED,
     // Code that would be necessary to generate the interesting Event. You do
@@ -70,9 +75,11 @@ If you've ever dealt with URLLoaders you'll know that sometimes they can be flak
     }
   );
 </code>
+</pre>
 
 Or if you want to more tightly control how many times and the spacing between attempts you could do this:
 
+<pre>
 <code>
   var retries = 5; // Max number of tries
   var period = 2000; // Milliseconds between tries
@@ -90,22 +97,26 @@ Or if you want to more tightly control how many times and the spacing between at
     period
   );
 </code>
+</pre>
 
 h3. Repetition
 
 Naturally, being the subscriber/publisher pattern there will come a time when you want to listen repeatedly to something. For example, after I render something onto the canvas I usually want to refresh my scroll panes and hide any spinners that I've drawn, the following easily accommodates this desire. 
 
+<pre>
 <code>
   rs.requireFlagRepeatedly(MyClass.PANE_LOADED, function () {
     refreshCanvas();
     hideSpinner();
   });
 </code>
+</pre>
 
 h3. Groups
 
 Okay hot shit, what about if I just want to listen for a bunch of signals and I don't really care about the order that they come in? 
 
+<pre>
 <code>
   rs.requireFlags([MyClass.CONFIG_LOADED, MyClass.LOCATION_LOADED], 
     function () {
@@ -113,6 +124,7 @@ Okay hot shit, what about if I just want to listen for a bunch of signals and I 
     }
   );
 </code>
+</pre>
 
 h3. Manually
 
