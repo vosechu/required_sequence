@@ -1,0 +1,136 @@
+Required Sequence is a tiny AS3 library that mandates that certain bits of code run before other bits of code. I've heard that Senocular has an "excellent version of this":http://www.senocular.com/flash/actionscript/?file=ActionScript_3.0/com/senocular/events/Sequence.as but I could never quite grok his library. There's also the apparently magical BulkLoader "which you can find here":http://code.google.com/p/bulk-loader/. Before I found those two libraries I had already written my own and it works quite well for me. 
+
+h2. Background
+
+Required Sequence is essentially an implementation of the Publish/Subscribe design pattern in AS3. It relies on the principle that when an important configuration process finishes it will dispatch an Event on the main class. Other processes that are interested in this merely tell their Required Sequence instance to listen for that Event and execute some code when it happens. 
+
+For example, if you need to load an XML config file before doing anything else you could easily write something like this:
+
+<code>
+  rs.requireFlag(MyClass.CONFIG_LOADED,
+    function () {
+      // Do the rest of my program
+    }
+  );
+</code>
+
+h2. Instructions
+
+Build your RS listener as follows. This would be good to do for each class or each section of code but it must not die during execution until all bits of code are run. 
+
+Here is a complete running example of a program that requires the loadConfig function to be run before doing anything else.
+
+<code>
+package 
+{
+  import com.chuckvose.utils.RequiredSequence;
+  
+  public class MyClass
+  {
+    public static const CONFIG_LOADED = 'configLoaded';
+    public var rs:RequiredSequence;
+    
+    public function MyClass()
+    {
+      rs = new RequiredSequence();
+      
+      // Ensure that we see the CONFIG_LOADED Event before doing anything else
+      rs.requireFlag(MyClass.CONFIG_LOADED,
+        function () {
+          // Do the rest of my program
+        }
+      );
+    }
+    
+    public function loadConfig()
+    {
+      // Do some stuff
+      dispatchEvent(new Event(MyClass.CONFIG_LOADED));
+    }
+  }
+}
+</code>
+
+Okay, that's pretty cool, but does it do anything else? I'm glad you asked actually. The library does three other things right now that are really, really damned important; in fact, I would hazard that most people will only use these later functions but since they all descend from that somewhat simple use above it seemed like a good starting point. 
+
+h3. Stubbornness
+
+If you've ever dealt with URLLoaders you'll know that sometimes they can be flakey. Wouldn't it be cool if you could just write a bit of code to try a function n times once every m seconds until you get some signal?
+
+<code>
+  rs.requireFlagWithRetry(MyClass.CONFIG_LOADED,
+    // Code that would be necessary to generate the interesting Event. You do
+    // not need to invoke this manually, it will run this code immediately.
+    function () {
+      loadConfig();
+    },
+    // Code to run after we see the interesting Event.
+    function () {
+      // Do the rest of my program
+    }
+  );
+</code>
+
+Or if you want to more tightly control how many times and the spacing between attempts you could do this:
+
+<code>
+  var retries = 5; // Max number of tries
+  var period = 2000; // Milliseconds between tries
+  rs.requireFlagWithRetry(MyClass.CONFIG_LOADED,
+    // Code that would be necessary to generate the interesting Event. You do
+    // not need to invoke this manually, it will run this code immediately.
+    function () {
+      loadConfig();
+    },
+    // Code to run after we see the interesting Event.
+    function () {
+      // Do the rest of my program
+    },
+    retries,
+    period
+  );
+</code>
+
+h3. Repetition
+
+Naturally, being the subscriber/publisher pattern there will come a time when you want to listen repeatedly to something. For example, after I render something onto the canvas I usually want to refresh my scroll panes and hide any spinners that I've drawn, the following easily accommodates this desire. 
+
+<code>
+  rs.requireFlagRepeatedly(MyClass.PANE_LOADED, function () {
+    refreshCanvas();
+    hideSpinner();
+  });
+</code>
+
+h3. Groups
+
+Okay hot shit, what about if I just want to listen for a bunch of signals and I don't really care about the order that they come in? 
+
+<code>
+  rs.requireFlags([MyClass.CONFIG_LOADED, MyClass.LOCATION_LOADED], 
+    function () {
+      drawWeatherDisplay();
+    }
+  );
+</code>
+
+h3. Manually
+
+Okay, so maybe your desires don't fall into one of the nice cases above, here's what needs to happen in order for events to be registered. The heart is in the following 4 functions:
+
+* isComplete(flagName): checks to see if a flag has completed. Run this before you start listening just in case the Event has already fired for a previous listener.
+* addFlag(flagName): adds a flag to the list of flags to listen for. When we see an Event fire with this string in it we'll check with all subscribers to see if that flag was interesting to them. 
+* completeFlag/uncompleteFlag(flagName): after you run your code you probably want to completeFlag so that RS knows to not bother you anymore and delete your listener. Similarly, a standard part of the require* functions is to run completeFlag so you may want to uncompleteFlag if you want to mark an Event as not having run yet. 
+* stopWatching/stopWatchingGroup: counterpart to addFlag these both tell RS to just stop listening for that flag or flags. 
+
+You can also look at the source, I hope that it's easy enough to read.
+
+h2. Contact
+
+I'm a pretty busy guy but if you have ideas for improvement you can always email me at vosechu+rs@gmail.com. I may not have time to respond but I really will try. Naturally, "standard procedures apply when asking questions":http://catb.org/~esr/faqs/smart-questions.html
+
+h2. Thanks
+
+Thank you to everyone that has ever sent me a message of encouragement. I really appreciate it; these are the fuel that Open Source developers thrive on. 
+
+Secondly, thank you to "Metal Toad Media":www.metaltoadmedia.com for letting me play with fun projects and paying me to develop outlandish little libraries like this.
