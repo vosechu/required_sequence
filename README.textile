@@ -139,7 +139,7 @@ You can also look at the source, I hope that it's easy enough to read.
 
 h2. Contact
 
-I'm a pretty busy guy but if you have ideas for improvement you can always email me at vosechu+rs@gmail.com. I may not have time to respond but I really will try. Naturally, "standard procedures apply when asking questions":http://catb.org/~esr/faqs/smart-questions.html
+If you have ideas for improvement you can always email me at vosechu+rs@gmail.com. Either that or just send me a pull request and I'll probably rip it in lickety-split.
 
 h2. Thanks
 
