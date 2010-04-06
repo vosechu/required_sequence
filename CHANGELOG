@@ -1,0 +1,7 @@
+v0.4.1 --
+Added the ability to run consolation functions if something just times out.
+
+v0.4 --
+First public release
+
+v0.3 -- Added ability to run a function with timeouts and retries

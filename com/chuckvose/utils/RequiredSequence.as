@@ -127,6 +127,85 @@ package mtm
 		}
 		
 		/**
+		 * Require this flag and retry n times until we get it damnit! If that
+		 * doesn't pan out though we should probably just error out and run some 
+		 * consolation function
+		 * 
+		 * @param flagName String the string that will be dispatched when the 
+		 * event we're waiting for is completed
+		 * @param retry Function the function that will eventually dispatch the
+		 * string we're waiting for
+		 * @param after Function the function that we will run after we see the
+		 * event dispatch we're interested in.
+		 * @param consolation Function the function that gets run if we run out 
+		 * of retries
+		 * 
+		 * @see requireFlag
+		 */
+		public function requireFlagWithRetryAndFailure (flagName : String, retry : Function, after : Function, consolation : Function, retries = 5, timeout = 2000):void 
+		{
+			timers[flagName] = new Timer(timeout, retries);
+			timers[flagName].start();
+			timers[flagName].addEventListener('timer', function () {
+				retry.call();
+			});
+			timers[flagName].addEventListener('timerComplete', function () {
+				consolation.call();
+			});
+			
+			if (isComplete(flagName)) {
+				after.call();
+				timers[flagName].stop();
+			}
+			else {
+				addFlag(flagName);
+				addEventListener(RequiredSequence.WAKEUP, function g (e:Event) {
+					if (isComplete(flagName)) {
+						stopWatching(flagName, g);
+						after.call();
+						timers[flagName].stop();
+					}
+				});
+			}
+		}
+		
+		/**
+		 * Require this flag and retry n times until we get it damnit!
+		 * 
+		 * @param flagName String the string that will be dispatched when the 
+		 * event we're waiting for is completed
+		 * @param retry Function the function that will eventually dispatch the
+		 * string we're waiting for
+		 * @param after Function the function that we will run after we see the
+		 * event dispatch we're interested in.
+		 * 
+		 * @see requireFlag
+		 */
+		public function requireFlagWithFailure (flagName : String, after : Function, consolation : Function, timeout = 2000):void 
+		{
+			timers[flagName] = new Timer(timeout, 1);
+			timers[flagName].start();
+			timers[flagName].addEventListener('timerComplete', function () {
+				consolation.call();
+			});
+			
+			if (isComplete(flagName)) {
+				after.call();
+				timers[flagName].stop();
+			}
+			else {
+				addFlag(flagName);
+				addEventListener(RequiredSequence.WAKEUP, function g (e:Event) {
+					if (isComplete(flagName)) {
+						stopWatching(flagName, g);
+						after.call();
+						timers[flagName].stop();
+					}
+				});
+			}
+		}
+		
+		/**
 		 * Convinience function to require multiple flags for a sequence. Can't
 		 * be run as a retry unfortunately.
 		 * 
