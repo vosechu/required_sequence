@@ -75,7 +75,7 @@ package mtm
 		 */
 		public function requireFlagRepeatedly (flagName : String, f : Function):void
 		{
-			if (isComplete(flagName)) {
+			if (isComplete(flagName) && flags[flagName] != null) {
 				f.call();
 				unComplete(flagName);
 			}
