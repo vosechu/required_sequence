@@ -1,4 +1,4 @@
-package mtm
+package com.chuckvose.utils
 {
 	import flash.events.*;
 	import flash.utils.*;
@@ -6,7 +6,7 @@ package mtm
 	public class RequiredSequence extends EventDispatcher
 	{
 		public var flags:Object;
-		public var callingClass:USAToday;
+		public var callingClass:Object;
 		public var timers:Object;
 		
 		public static const WAKEUP:String = 'wakeup';

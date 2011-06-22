@@ -35,7 +35,7 @@ package
     
     public function MyClass()
     {
-      rs = new RequiredSequence();
+      rs = new RequiredSequence(this);
       
       // Ensure that we see the CONFIG_LOADED Event before doing anything else
       rs.requireFlag(MyClass.CONFIG_LOADED,
